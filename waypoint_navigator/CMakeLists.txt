@@ -5,6 +5,12 @@ add_definitions(-std=c++11)
 
 find_package(catkin_simple REQUIRED)
 find_package(geodetic_utils REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  std_msgs
+  message_generation
+)
 
 catkin_simple()
 
