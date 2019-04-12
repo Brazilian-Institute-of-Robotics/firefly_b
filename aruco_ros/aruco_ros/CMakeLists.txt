@@ -31,7 +31,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES aruco_ros_utils
-  CATKIN_DEPENDS aruco sensor_msgs tf 
+  CATKIN_DEPENDS aruco sensor_msgs tf geometry_msgs
 )
 
 include_directories(

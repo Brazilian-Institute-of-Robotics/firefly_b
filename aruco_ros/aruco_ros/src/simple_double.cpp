@@ -49,9 +49,9 @@ or implied, of Rafael Muñoz Salinas.
 #include <dynamic_reconfigure/server.h>
 #include <aruco_ros/ArucoThresholdConfig.h>
 
-#include "ros/ros.h"
 #include <cstdlib>
 #include <waypoint_navigator/GoToWaypoint.h>
+#include <geometry_msgs/Pose.h>
 
 using namespace cv;
 using namespace aruco;
@@ -80,9 +80,16 @@ int marker_id2;
 int marker_id3;
 int marker_id4;
 int detect = 0;
+int go = 0;
 bool tag = false;
 
 ros::NodeHandle* nh;
+
+void PoseCallback(const geometry_msgs::Pose::ConstPtr& msg){
+  double z = msg->position.z;
+  ROS_INFO("z: %f",z);
+  go++;
+}
 
 void image_callback(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -121,17 +128,18 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
           geometry_msgs::Pose poseMsg;
           tf::poseTFToMsg(transform, poseMsg);
           pose_pub1.publish(poseMsg);
-            
-            if(tag==false){
+                      
+            if(go<5){
             ros::ServiceClient client = nh->serviceClient<waypoint_navigator::GoToWaypoint>("/firefly/go_to_waypoint");
             waypoint_navigator::GoToWaypoint srv;
             srv.request.point.x = 600;
             srv.request.point.y = 0;
             srv.request.point.z = 60;
             if(client.call(srv)){
-              ROS_INFO("Tag detected. Acting...");
+              ros::Subscriber sub = nh->subscribe("/firefly/ground_truth/pose",1,PoseCallback);
+              ros::spinOnce();
+              ROS_INFO("Tag detected. Acting...%d",go);
             }
-            tag=true;
             }
 
         }
@@ -144,16 +152,17 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
           tf::poseTFToMsg(transform, poseMsg);
           pose_pub2.publish(poseMsg);
 
-            if(tag==true){
+            if(go<10){
             ros::ServiceClient client = nh->serviceClient<waypoint_navigator::GoToWaypoint>("/firefly/go_to_waypoint");
             waypoint_navigator::GoToWaypoint srv;
             srv.request.point.x = 900;
             srv.request.point.y = 0;
             srv.request.point.z = 30;
             if(client.call(srv)){
-              ROS_INFO("Tag detected. Acting...");
+              ros::Subscriber sub = nh->subscribe("/firefly/ground_truth/pose",1,PoseCallback);
+              ros::spinOnce();
+              ROS_INFO("Tag detected. Acting...%d",go);
             }
-            tag=false;
             }
         }
         else if ( markers[i].id == marker_id3 )
@@ -165,16 +174,17 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
           tf::poseTFToMsg(transform, poseMsg);
           pose_pub2.publish(poseMsg);
 
-            if(tag==false){
+            if(go<15){
             ros::ServiceClient client = nh->serviceClient<waypoint_navigator::GoToWaypoint>("/firefly/go_to_waypoint");
             waypoint_navigator::GoToWaypoint srv;
             srv.request.point.x = 1200;
             srv.request.point.y = 0;
             srv.request.point.z = 15;
             if(client.call(srv)){
-              ROS_INFO("Tag detected. Acting...");
+              ros::Subscriber sub = nh->subscribe("/firefly/ground_truth/pose",1,PoseCallback);
+              ros::spinOnce();
+              ROS_INFO("Tag detected. Acting...%d",go);
             }
-            tag=true;
             }
         }
         else if ( markers[i].id == marker_id4 )
@@ -186,16 +196,17 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
           tf::poseTFToMsg(transform, poseMsg);
           pose_pub2.publish(poseMsg);
 
-            if(tag==true){
+            if(go<20){
             ros::ServiceClient client = nh->serviceClient<waypoint_navigator::GoToWaypoint>("/firefly/go_to_waypoint");
             waypoint_navigator::GoToWaypoint srv;
             srv.request.point.x = 1200;
             srv.request.point.y = 0;
             srv.request.point.z = 1;
             if(client.call(srv)){
-              ROS_INFO("Tag detected. Acting...");
+              ros::Subscriber sub = nh->subscribe("/firefly/ground_truth/pose",1,PoseCallback);
+              ros::spinOnce();
+              ROS_INFO("Tag detected. Acting...%d",go);
             }
-            tag=false;
             }
         }
 
@@ -320,20 +331,7 @@ int main(int argc,char **argv)
   ros::init(argc, argv, "aruco_simple");
   nh = new ros::NodeHandle("~");
   image_transport::ImageTransport it(*nh);
-
-  if(detect==0){ROS_INFO("null");}
-
-  //ros::ServiceClient client = nh.serviceClient<waypoint_navigator::GoToHeight>("go_to_height",true);
-  //geometry_msgs::Point srv;
-  //srv = [2,0,1];
-  //waypoint_navigator::GoToHeight srv;
-  //srv.point.x = 0;
-  //srv.point.y = 0;
-  //srv.height.data = 2;
-  //ros::service::waitForService("add_two_ints");
-
-  //waypoint_client_.call(srv);
-  //ROS_INFO("%d",srv.request);*/
+  //if(tag==true){ros::Subscriber sub = nh->subscribe("/firefly/ground_truth/pose",10,PoseCallback);}
 
   dynamic_reconfigure::Server<aruco_ros::ArucoThresholdConfig> server;
   dynamic_reconfigure::Server<aruco_ros::ArucoThresholdConfig>::CallbackType f_;
