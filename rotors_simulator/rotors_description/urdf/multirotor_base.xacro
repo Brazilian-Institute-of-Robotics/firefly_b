@@ -74,15 +74,82 @@
       </collision>
     </link>
 
-    <joint name="camera_joint" type="fixed">
+    <joint name="velodyne_joint" type="fixed">
+      <axis xyz="0 1 0" />
+      <origin xyz="0 0 -0.02" rpy="0 1.5708 0"/>
+      <parent link="${robot_namespace}/base_link"/>
+      <child link="puck"/>
+    </joint>
+
+    <link name="puck">
+      <inertial>
+        <mass value="0.1" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+	<inertia ixx="0.000090623" ixy="0" ixz="0" iyy="0.000090623" iyz="0" izz="0.000091036"/>
+      </inertial>
+
+      <collision name="puck_collision">
+       <origin xyz="0 0 0" rpy="-1.5708 0 0"/>
+        <geometry>
+	  <cylinder length="0.07275" radius="0.05164"/>
+        </geometry>
+      </collision>
+
+      <visual name="puck_visual">
+        <origin xyz="0 0 0" rpy="-1.5708 0 0"/>
+        <geometry>
+	    <mesh filename="model://velodyne_puck/meshes/velodyne_puck.dae"/>
+        </geometry>
+      </visual>
+
+    </link>
+
+  <gazebo reference="puck">
+    <sensor type="ray" name="sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+              <samples>16</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.261799</min_angle>
+              <max_angle>0.261799</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+            <min>0.1</min>
+            <max>100</max>
+            <resolution>0.02</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.02</stddev>
+        </noise>
+      </ray>
+      <plugin name="velodyne_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/firefly/laser/scan</topicName>
+        <frameName>puck</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+    <!--<joint name="camera_joint" type="fixed">
       <axis xyz="0 1 0" />
       <origin xyz="0 0 -0.01" rpy="-1.5708 0 1.5708"/>
       <parent link="${robot_namespace}/base_link"/>
       <child link="camera_link"/>
     </joint>
+-->
 
     <!-- Camera -->
-    <link name="camera_link">
+    <!--<link name="camera_link">
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
@@ -104,9 +171,9 @@
        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
      </inertial>
     </link>
-
+-->
       <!-- camera -->
-  <gazebo reference="camera_link">
+  <!--<gazebo reference="camera_link">
     <sensor type="camera" name="camera1">
       <update_rate>30.0</update_rate>
       <camera name="head">
@@ -123,10 +190,11 @@
         </clip>
         <noise>
           <type>gaussian</type>
+-->
           <!-- Noise is sampled independently per pixel on each frame.
                That pixel's noise value is added to each of its color
                channels, which at that point lie in the range [0,1]. -->
-          <mean>0.0</mean>
+          <!--<mean>0.0</mean>
           <stddev>0.007</stddev>
         </noise>
       </camera>
@@ -137,10 +205,11 @@
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>camera_link_optical</frameName>
+-->
         <!-- setting hackBaseline to anything but 0.0 will cause a misalignment
             between the gazebo sensor image and the frame it is supposed to
             be attached to -->
-        <hackBaseline>0.0</hackBaseline>
+        <!--<hackBaseline>0.0</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
         <distortionK3>0.0</distortionK3>
@@ -153,7 +222,7 @@
       </plugin>
     </sensor>
   </gazebo>
-
+-->
 
     <!-- attach multirotor_base_plugin to the base_link -->
     <gazebo>
